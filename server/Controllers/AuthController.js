@@ -35,7 +35,9 @@ const signup = async (req, res) => {
         }
 
         // ✅ Check existing user
-        const existingUser = await User.findOne({ userEmail });
+        const existingUser = await User.findOne({
+            userEmail: userEmail?.toLowerCase().trim()
+        });
         if (existingUser) {
             return res.status(400).json({
                 error: "Email already exists",
@@ -64,7 +66,7 @@ const signup = async (req, res) => {
             firstName,
             lastName,
             userBio,
-            userEmail,
+            userEmail: userEmail?.toLowerCase().trim(),
             userMobile,
             userName,
             userPassword: encryptedPassword,
