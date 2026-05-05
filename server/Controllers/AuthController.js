@@ -5,6 +5,13 @@ import cloudinary from "cloudinary";
 
 dotenv.config();
 
+// ✅ Cloudinary config (IMPORTANT)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 // ================= SIGNUP =================
 const signup = async (req, res) => {
     try {
@@ -18,20 +25,20 @@ const signup = async (req, res) => {
             userPassword,
         } = req.body;
 
-        console.log("Request Body:", req.body);
+        console.log("📥 Request Body:", req.body);
 
-        // ✅ Check email required
-        if (!userEmail) {
+        // ✅ Validation
+        if (!userEmail || !userPassword || !userName) {
             return res.status(400).json({
-                error: "Email is required",
+                error: "Required fields missing",
             });
         }
 
-        // ✅ Check if user already exists
+        // ✅ Check existing user
         const existingUser = await User.findOne({ userEmail });
         if (existingUser) {
             return res.status(400).json({
-                message: "User already exists with this email",
+                error: "Email already exists",
             });
         }
 
@@ -39,13 +46,17 @@ const signup = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const encryptedPassword = await bcrypt.hash(userPassword, salt);
 
-        // ✅ Default image
+        // ✅ Image upload (optional)
         let imageUrl = "";
 
-        // ✅ If image exists → upload
         if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            imageUrl = result.secure_url;
+            try {
+                const result = await cloudinary.uploader.upload(req.file.path);
+                imageUrl = result.secure_url;
+                console.log("☁️ Cloudinary URL:", imageUrl);
+            } catch (err) {
+                console.log("❌ Cloudinary Error:", err);
+            }
         }
 
         // ✅ Create user
@@ -57,12 +68,12 @@ const signup = async (req, res) => {
             userMobile,
             userName,
             userPassword: encryptedPassword,
-            profileImage: imageUrl, // optional now
+            profileImage: imageUrl,
         });
 
         await newUser.save();
 
-        console.log("✅ User saved:", newUser);
+        console.log("✅ User Saved:", newUser);
 
         return res.status(200).json({
             message: "User Registered Successfully",
@@ -72,14 +83,16 @@ const signup = async (req, res) => {
     } catch (error) {
         console.log("❌ Signup Error:", error);
 
-        // duplicate email error fix
+        // ✅ Duplicate key fix
         if (error.code === 11000) {
             return res.status(400).json({
                 error: "Email already exists",
             });
         }
 
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({
+            error: "Internal Server Error",
+        });
     }
 };
 
@@ -88,12 +101,17 @@ const login = async (req, res) => {
     try {
         const { userEmail, userPassword } = req.body;
 
+        if (!userEmail || !userPassword) {
+            return res.status(400).json({
+                error: "Email and Password required",
+            });
+        }
+
         const user = await User.findOne({ userEmail });
 
         if (!user) {
-            return res.json({
-                status: "Error",
-                message: "User not found",
+            return res.status(404).json({
+                error: "User not found",
             });
         }
 
@@ -103,19 +121,22 @@ const login = async (req, res) => {
         );
 
         if (!passwordMatch) {
-            return res.json({
-                status: "Error",
-                message: "Invalid password",
+            return res.status(400).json({
+                error: "Invalid password",
             });
         }
 
         return res.status(200).json({
-            status: "Success",
+            message: "Login Successful",
             user,
         });
 
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.log("❌ Login Error:", error);
+
+        return res.status(500).json({
+            error: "Internal Server Error",
+        });
     }
 };
 

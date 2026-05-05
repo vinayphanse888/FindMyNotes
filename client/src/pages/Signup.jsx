@@ -14,10 +14,11 @@ const Signup = () => {
   const [userPassword, setUserPassword] = useState("");
 
   const registerUser = async (e) => {
-    try {
-      e.preventDefault();
+    e.preventDefault();
 
+    try {
       const formData = new FormData();
+
       formData.append("firstName", firstName);
       formData.append("lastName", lastName);
       formData.append("userBio", userBio);
@@ -25,20 +26,30 @@ const Signup = () => {
       formData.append("userMobile", userMobile);
       formData.append("userName", userName);
       formData.append("userPassword", userPassword);
-      formData.append("profileImage", profileImage);
 
-      // ❌ DO NOT ADD headers manually
+      // ✅ FIX: only send image if exists
+      if (profileImage) {
+        formData.append("profileImage", profileImage);
+      }
+
       const result = await axios.post(
         "https://findmynotes-backend-pxyf.onrender.com/auth/signup",
         formData
       );
 
-      console.log("Response:", result.data);
+      console.log(result.data);
       alert("User Registered Successfully ✅");
 
     } catch (error) {
-      console.error("Register Error:", error.response?.data || error.message);
-      alert("Registration Failed ❌");
+      console.error(error.response?.data || error.message);
+
+      if (error.response?.data?.message) {
+        alert(error.response.data.message);
+      } else if (error.response?.data?.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("Registration Failed ❌");
+      }
     }
   };
 
