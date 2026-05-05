@@ -20,28 +20,33 @@ const signup = async (req, res) => {
 
         console.log("Request Body:", req.body);
 
+        // ✅ Check email required
+        if (!userEmail) {
+            return res.status(400).json({
+                error: "Email is required",
+            });
+        }
+
         // ✅ Check if user already exists
         const existingUser = await User.findOne({ userEmail });
         if (existingUser) {
-            return res.status(401).json({
+            return res.status(400).json({
                 message: "User already exists with this email",
             });
         }
 
-        // ✅ Check file
-        if (!req.file) {
-            return res.status(400).json({
-                error: "No Profile Image Provided",
-            });
-        }
-
-        // ✅ Upload to Cloudinary (CORRECT for diskStorage)
-        const result = await cloudinary.uploader.upload(req.file.path);
-        console.log("Cloudinary Upload:", result.secure_url);
-
         // 🔐 Hash password
         const salt = await bcrypt.genSalt(10);
         const encryptedPassword = await bcrypt.hash(userPassword, salt);
+
+        // ✅ Default image
+        let imageUrl = "";
+
+        // ✅ If image exists → upload
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path);
+            imageUrl = result.secure_url;
+        }
 
         // ✅ Create user
         const newUser = new User({
@@ -52,13 +57,12 @@ const signup = async (req, res) => {
             userMobile,
             userName,
             userPassword: encryptedPassword,
-            profileImage: result.secure_url,
+            profileImage: imageUrl, // optional now
         });
 
-        // ✅ SAVE TO DATABASE
         await newUser.save();
 
-        console.log("✅ User saved in DB:", newUser);
+        console.log("✅ User saved:", newUser);
 
         return res.status(200).json({
             message: "User Registered Successfully",
@@ -67,6 +71,14 @@ const signup = async (req, res) => {
 
     } catch (error) {
         console.log("❌ Signup Error:", error);
+
+        // duplicate email error fix
+        if (error.code === 11000) {
+            return res.status(400).json({
+                error: "Email already exists",
+            });
+        }
+
         res.status(500).json({ error: error.message });
     }
 };

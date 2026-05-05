@@ -164,7 +164,7 @@ const Signup = () => {
               <input
                 type="file"
                 placeholder="File"
-                accept="application/png"
+                accept="image/*"
                 id="dropzone-file"
                 onChange={(e) => {
                   setProfilePreviewImage(
