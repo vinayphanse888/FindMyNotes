@@ -36,7 +36,7 @@ const UploadNote = () => {
 
       // ✅ FIX: removed manual headers
       const result = await axios.post(
-        "http://localhost:6969/notes/upload",
+        "https://findmynotes-backend-pxyf.onrender.com/notes/upload",
         formData
       );
 

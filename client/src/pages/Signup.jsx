@@ -29,7 +29,7 @@ const Signup = () => {
 
       // ❌ DO NOT ADD headers manually
       const result = await axios.post(
-        "http://localhost:6969/auth/signup",
+        "https://findmynotes-backend-pxyf.onrender.com/auth/signup",
         formData
       );
 

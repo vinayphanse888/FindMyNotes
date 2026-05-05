@@ -17,7 +17,7 @@ const SearchBar = () => {
     e.preventDefault();
 
     try {
-      const notes = await axios.get("http://localhost:6969/notes/getFiles", {
+      const notes = await axios.get("https://findmynotes-backend-pxyf.onrender.com/notes/getFiles", {
         params: {
           title: searchQuery,
         },
@@ -36,7 +36,7 @@ const SearchBar = () => {
   }
 
   const showPDF = async (files) => {
-    window.open(`http://localhost:6969/files/${files}`, "_blank", "noreferrer");
+    window.open(`https://findmynotes-backend-pxyf.onrender.com/files/${files}`, "_blank", "noreferrer");
   };
 
   return (
@@ -49,7 +49,7 @@ const SearchBar = () => {
             {/* input  */}
             <input
               type="search"
-              placeholder="Seach for Notes"
+              placeholder="Search for Notes"
               className="ml-3 w-full bg-[#374151] text-white"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
