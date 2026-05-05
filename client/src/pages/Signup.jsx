@@ -4,7 +4,8 @@ import axios from "axios";
 
 const Signup = () => {
   const [profilePreviewImage, setProfilePreviewImage] = useState("");
-  const [profileImage, setProfileImage] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userMobile, setUserMobile] = useState("");
@@ -19,6 +20,7 @@ const Signup = () => {
     try {
       const formData = new FormData();
 
+      // ✅ EXACT FIELD NAMES (must match backend)
       formData.append("firstName", firstName);
       formData.append("lastName", lastName);
       formData.append("userBio", userBio);
@@ -27,176 +29,126 @@ const Signup = () => {
       formData.append("userName", userName);
       formData.append("userPassword", userPassword);
 
-      // ✅ FIX: only send image if exists
+      // ✅ optional image
       if (profileImage) {
         formData.append("profileImage", profileImage);
       }
 
-      const result = await axios.post(
+      const res = await axios.post(
         "https://findmynotes-backend-pxyf.onrender.com/auth/signup",
         formData
       );
 
-      console.log(result.data);
-      alert("User Registered Successfully ✅");
+      alert("✅ " + res.data.message);
 
-    } catch (error) {
-      console.error(error.response?.data || error.message);
+    } catch (err) {
+      console.log(err.response?.data);
 
-      if (error.response?.data?.message) {
-        alert(error.response.data.message);
-      } else if (error.response?.data?.error) {
-        alert(error.response.data.error);
-      } else {
-        alert("Registration Failed ❌");
-      }
+      alert(
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Registration Failed ❌"
+      );
     }
   };
 
   return (
-    <div className=" flex w-full items-center justify-center bg-[#f3f4f6]">
-      <form className="flex h-full w-full max-w-[420px] flex-col gap-3 bg-white p-5" onSubmit={registerUser}>
+    <div className="flex w-full items-center justify-center bg-[#f3f4f6]">
+      <form
+        onSubmit={registerUser}
+        className="flex w-full max-w-[420px] flex-col gap-3 bg-white p-5"
+      >
         <h1 className="text-2xl font-black">Register</h1>
-        <div className="flex items-start justify-center gap-4" >
-          <div className="flex flex-col items-start justify-center">
-            <label className="font-bold" htmlFor="firstName">First Name</label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              className="w-full rounded-lg border p-2 focus:border-blue-500  focus:outline-none"
-              placeholder="John"
-              onChange={(e) => setFirstName(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col items-start justify-center">
-            <label className="font-bold" htmlFor="lastName">Last Name</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              className="w-full rounded-lg border p-2 focus:border-blue-500  focus:outline-none"
-              placeholder="Doe"
-              onChange={(e) => setLastName(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="flex flex-col items-start justify-center">
-          <label className="font-bold" htmlFor="userBio">Bio</label>
-          <textarea
-            id="userBio"
-            name="userBio"
-            rows="3"
-            className="mt-1 w-full rounded-md border p-2 focus:border-blue-500 focus:outline-none"
-            placeholder="Tell us something about yourself"
-            required
-            onChange={(e) => setUserBio(e.target.value)}
-          ></textarea>
 
-        </div>
-        <div className="flex flex-col items-start justify-center">
-          <label className="font-bold" htmlFor="userEmail">Email</label>
-          <input
-            type="email"
-            id="userEmail"
-            name="userEmail"
-            className="w-full rounded-lg border p-2 focus:border-blue-500  focus:outline-none"
-            placeholder="your.email@example.com"
-            onChange={(e) => setUserEmail(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col items-start justify-center">
-          <label className="font-bold" htmlFor="userMobile">Mobile Number</label>
-          <input
-            type="number"
-            id="userMobile"
-            name="userMobile"
-            className="w-full rounded-lg border p-2 focus:border-blue-500  focus:outline-none"
-            placeholder="0000000000"
-            onChange={(e) => setUserMobile(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col items-start justify-center">
-          <label className="font-bold" htmlFor="userName">UserName</label>
+        <div className="flex gap-4">
           <input
             type="text"
-            id="userName"
-            name="userName"
-            className="w-full rounded-lg border p-2 focus:border-blue-500  focus:outline-none"
-            placeholder="johndoe123"
-            onChange={(e) => setUserName(e.target.value)}
+            placeholder="First Name"
+            onChange={(e) => setFirstName(e.target.value)}
+            className="border p-2 w-full"
+            required
           />
-        </div>
-        <div className="flex flex-col items-start justify-center">
-          <label className="font-bold" htmlFor="userPassword">Password</label>
           <input
-            type="password"
-            id="userPassword"
-            name="userPassword"
-            className="w-full rounded-lg border p-2 focus:border-blue-500  focus:outline-none"
-            placeholder="*********"
-            onChange={(e) => setUserPassword(e.target.value)}
+            type="text"
+            placeholder="Last Name"
+            onChange={(e) => setLastName(e.target.value)}
+            className="border p-2 w-full"
+            required
           />
         </div>
-        <div className="flex w-full flex-col items-center justify-center">
-          <div className="mb-4 grid h-[200px] w-[200px] place-content-center overflow-hidden rounded-full border-2 border-dashed border-gray-300 bg-gray-50 text-2xl font-black">
-            {/* 200 x 200 */}
-            {profilePreviewImage == "" ? (
-              <p className="text-sm font-bold text-gray-500">Profile Image</p>
+
+        <textarea
+          placeholder="Bio"
+          onChange={(e) => setUserBio(e.target.value)}
+          className="border p-2"
+          required
+        />
+
+        <input
+          type="email"
+          placeholder="Email"
+          onChange={(e) => setUserEmail(e.target.value)}
+          className="border p-2"
+          required
+        />
+
+        <input
+          type="text"
+          placeholder="Mobile"
+          onChange={(e) => setUserMobile(e.target.value)}
+          className="border p-2"
+          required
+        />
+
+        <input
+          type="text"
+          placeholder="Username"
+          onChange={(e) => setUserName(e.target.value)}
+          className="border p-2"
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setUserPassword(e.target.value)}
+          className="border p-2"
+          required
+        />
+
+        {/* Image preview */}
+        <div className="flex flex-col items-center">
+          <div className="h-[150px] w-[150px] rounded-full border flex items-center justify-center overflow-hidden">
+            {profilePreviewImage ? (
+              <img src={profilePreviewImage} alt="" />
             ) : (
-              <img src={profilePreviewImage} alt="" className="" />
+              <p>Profile Image</p>
             )}
           </div>
-          <label
-            htmlFor="dropzone-file"
-            className="flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100"
-          >
-            <div className="flex flex-col items-center justify-center pb-6 pt-5">
-              <svg
-                className="mb-4 h-8 w-8 text-gray-500 "
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 20 16"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2 "
-                />
-              </svg>
-              <p className="mb-2 text-sm text-gray-500">
-                <span className="font-semibold">
-                  Click to Upload your profile image
-                </span>
-              </p>
-              <input
-                type="file"
-                placeholder="File"
-                accept="image/*"
-                id="dropzone-file"
-                onChange={(e) => {
-                  setProfilePreviewImage(
-                    URL.createObjectURL(e.target.files[0]),
-                  );
-                  setProfileImage(e.target.files[0]);
-                }}
-                className="hidden"
-              />
-            </div>
-          </label>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                setProfileImage(file);
+                setProfilePreviewImage(URL.createObjectURL(file));
+              }
+            }}
+          />
         </div>
-        <button className="rounded-lg bg-blue-500 px-5 py-2 font-bold text-white hover:bg-blue-600">
+
+        <button className="bg-blue-500 text-white p-2 rounded">
           Register
         </button>
-        <div className="text-sm">
+
+        <p>
           Already have an account?{" "}
-          <Link to="/login" className="font-bold text-blue-500 hover:underline">
+          <Link to="/login" className="text-blue-500">
             Login
           </Link>
-        </div>
+        </p>
       </form>
     </div>
   );
